@@ -75,13 +75,13 @@ def deal_data1(conn, addr):
                         Config.player_dict.update({now_player.ip: now_player})
                         break
 
-            now_player_score = json.loads(data.decode().split(",")[-1])
+            now_player_score = json.loads(data.decode().split("@")[-1])
             now_player.score = now_player_score["score"]
             print("now_player: \n\t" + str(now_player))
             Config.player_dict.update({addr[0]: now_player})
             if now_player.fip != "":
                 Config.player_dict[now_player.fip].fscore = now_player.score
-            send_message = str(now_player).replace("'", '"')
+            send_message = "@" + str(now_player).replace("'", '"')
             conn.send(send_message.encode())
             print("Message to client: \n\t" + send_message)
 
