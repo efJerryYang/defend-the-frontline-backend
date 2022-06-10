@@ -1,4 +1,5 @@
 import socket
+import json
 import threading
 import sys
 import os
@@ -9,16 +10,16 @@ import os
 
 
 class Player:
-    ip = ""
-    score = 0
-    fscore = 0
-    matched = False
 
     def __init__(self, ip) -> None:
         self.ip = ip
+        self.fip = ""
+        self.score = 0
+        self.fscore = 0
+        self.matched = False
 
     def __str__(self) -> str:
-        return "{ip:"+str(self.ip)+", score:"+str(self.score)+", fscore:"+str(self.fscore)+"}"
+        return str(self.__dict__).replace('\'', "\"").lower()
 
     def __repr__(self) -> str:
         return str(self)
@@ -26,7 +27,7 @@ class Player:
 
 class Config:
     default_player = Player('127.0.0.1')
-    player_dict = {'127.0.0.1': default_player}
+    player_dict = {}
 
 
 def socket_service():
@@ -43,9 +44,8 @@ def socket_service():
     # start to wait connection
     while True:
         conn, addr = s.accept()
-        if not addr[0] in Config.player_dict.keys():
-            new_player = Player(addr[0])
-            Config.player_dict.update({addr[0]: new_player})
+        new_player = Player(addr[0])
+        Config.player_dict.update({addr[0]: new_player})
         print(Config.player_dict)
         t = threading.Thread(target=deal_data1, args=(conn, addr))
         t.start()
@@ -59,9 +59,33 @@ def deal_data1(conn, addr):
             os.getcwd(), 'server-test-file.txt'), 'rb')
         try:
             all_the_text = file_object.read()
-            conn.send(str(Config.player_dict).encode())
-            print("Info to client: "+str(Config.player_dict))
-            print("Score data: "+data.decode())
+            print("Raw data from client: \n\t" + data.decode())
+            
+            # update friend score
+            now_player = Config.player_dict[addr[0]]
+            if not now_player.fip in Config.player_dict.keys():
+                for player in Config.player_dict.values():
+                    if not player.matched and player.ip != now_player.ip:
+                        now_player.fip = player.ip
+                        # print("now_player.fip:\t" + now_player.fip)
+                        now_player.matched = True
+                        player.fip = now_player.ip
+                        player.matched = True
+                        Config.player_dict.update({player.ip: player})
+                        Config.player_dict.update({now_player.ip: now_player})
+                        break
+
+            now_player_score = json.loads(data.decode().split(",")[-1])
+            now_player.score = now_player_score["score"]
+            print("now_player: \n\t" + str(now_player))
+            Config.player_dict.update({addr[0]: now_player})
+            if now_player.fip != "":
+                Config.player_dict[now_player.fip].fscore = now_player.score
+            send_message = str(now_player).replace("'", '"')
+            conn.send(send_message.encode())
+            print("Message to client: \n\t" + send_message)
+
+
         finally:
             file_object.close()
         # print("Waiting connection...")
