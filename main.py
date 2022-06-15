@@ -55,10 +55,10 @@ def deal_data1(conn, addr):
     print(f"Accept new connection from {addr}")
     data = conn.recv(1024)
     while data != "":
-        file_object = open(os.path.join(
-            os.getcwd(), 'server-test-file.txt'), 'rb')
+        # file_object = open(os.path.join(
+            # os.getcwd(), 'server-test-file.txt'), 'rb')
         try:
-            all_the_text = file_object.read()
+            # all_the_text = file_object.read()
             print("Raw data from client: \n\t" + data.decode())
             
             # update friend score
@@ -87,7 +87,8 @@ def deal_data1(conn, addr):
 
 
         finally:
-            file_object.close()
+            # file_object.close()
+            pass
         # print("Waiting connection...")
         data = conn.recv(1024)
 
