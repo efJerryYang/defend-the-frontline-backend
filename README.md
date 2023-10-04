@@ -1,4 +1,7 @@
 # defend-the-frontline-backend
+
+[English](./README_en.md) | [中文](./README.md)
+
 面向对象实践 | 飞机大战安卓移植-后端
 
 该脚本改自网上博客，链接在代码里有提供，只负责数据传输以及和客户端通信，游戏逻辑在安卓端。
